@@ -194,6 +194,7 @@ if button == True:
     col1.metric(label='Historical Volatility', value = f"{round(vol * 100, 2)}%")
     col2.metric(label='Options Theoretical Value', value= f"${round(options_ev, 2)}")
 
+    st.write(f"Graph: 10 of {iterations} Sample Paths Utilized to Simulate Random Price Movements")
     sample_plot(paths= sample_paths)
 
 #Model Description
