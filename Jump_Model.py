@@ -18,6 +18,8 @@ class DataFetch:
         start = today - dtime.timedelta(self.days)
         ticker = yf.Ticker(self.stock)
         df = ticker.history(start= start, end= today)
+        if df.empty:
+            raise ValueError("Please Input A Valid Stock Ticker")
         if self.droplist is not None:
             for col in self.droplist:
                 if col in df.columns:
@@ -151,7 +153,7 @@ def sample_plot(paths, num_paths=10):
     plot_data = pd.DataFrame(paths)
     plot_sample = plot_data.iloc[:, :num_paths]
     sns.set(style= "dark")
-    plt.figure(figsize=(10,8))
+    plt.figure(figsize=(14,8))
     sns.lineplot(data= plot_sample, palette="mako", linewidth= 2)
     plt.xlabel('Timestep')
     plt.ylabel('Price')
@@ -160,10 +162,10 @@ def sample_plot(paths, num_paths=10):
 
 #Steamlit#
 st.title("Jump-Diffusion Options Pricing Model")
-st.write("XYZ Text")
 
+#Sidebar Settings Menu#
 with st.sidebar:
-    st.title("Settings")
+    st.title("Model Inputs:")
     #Inputs#
     ticker = st.text_input("Stock Ticker", value= 'SPY')
     option_type = st.selectbox("Option Type", ("Call", "Put"))
@@ -174,21 +176,27 @@ with st.sidebar:
     iterations = st.number_input("Number of Simulations", value = 50000)
     drop_list = ['Open', 'High', 'Low', 'Stock Splits', 'Capital Gains', 'Dividends', 'Volume']
 
+    #Run Button
+    button = st.button("Run Simulation")
+
     st.title("Personal Information")
     linkedin_url = 'https://www.linkedin.com/in/michaelwojciechowski93'
     st.markdown(
         f'<a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;">Michael Wojciechowski</a>',
         unsafe_allow_html=True)
 
-
-if st.button("Run Simulation"):
+#Run and Streamlit Main Page
+if button == True:
     simulation = Simulation(stock= ticker, days= days, droplist= drop_list, T= T, iterations= iterations, N= N, strike= K, options_type= option_type)
     options_ev, vol, sample_paths = simulation.run_simulation()
 
-    st.write(f"Historical Vol: {round(vol * 100, 2)}%")
-    st.write(f"Option Value: ${options_ev}")
+    col1, col2 = st.columns([1,1])
+    col1.metric(label='Historical Volatility', value = f"{round(vol * 100, 2)}%")
+    col2.metric(label='Options Theoretical Value', value= f"${round(options_ev, 2)}")
 
     sample_plot(paths= sample_paths)
 
-st.markdown('### Model Description')
-description = st.text_area("Description", "XYZ Notes About Model")
+#Model Description
+st.markdown('#### Model Description')
+with st.expander("Click Here To Read More About The Model:"):
+    st.write("xyz model description")
